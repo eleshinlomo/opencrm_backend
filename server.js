@@ -10,8 +10,10 @@ app.use(cors({
 }))
 app.use(express.urlencoded({extended: false}))
 
-app.get('/', (req, res)=>{
-    res.send("Server is now live and sending messages")
-})
+app.use('/', require('./Routes/Routers/homeRoute'))
+app.use('/api', require('./Routes/Routers/api'))
+
+
+
 
 app.listen(PORT, ()=>console.log(`Server is now running on ${PORT}`))
