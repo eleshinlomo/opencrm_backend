@@ -8,7 +8,8 @@ const PORT = process.env.PORT || 3500
 
 app.use(express.json())
 app.use(cors({
-    origin: "*"
+    "Access-Control-Allow-Origin" : "*",
+    "Access-Control-Allow-Credentials" : true 
 }))
 app.use(session({
     secret: 'secret',

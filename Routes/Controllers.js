@@ -13,11 +13,25 @@ exports.createUser = (req, res)=>{
         user.password = hash;
         user.save()
         .then((result)=>{
-            res.status(200).json()
+            res.status(200).send("Now sent")
             
         })
 }))
   }  
+
+  exports.getDashboard = (req, res)=>{
+    User.find()
+    .then((data)=>{
+        if(!data){
+            console.log("no data found")
+        }else{
+           return res.json(data)
+        }
+    })
+    .then((result)=>{
+        console.log(result)
+    })
+  }
     
     
     
