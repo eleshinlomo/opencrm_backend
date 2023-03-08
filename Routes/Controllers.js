@@ -1,9 +1,10 @@
 const express = require('express')
 const User  = require('../models/user')
 const bcrypt = require('bcrypt')
+const middleware = require('../middleware')
 
 
-exports.createUser = (req, res)=>{
+exports.createUser = (middleware.registerAuth,(req, res)=>{
     const {email, firstname, lastname, password} = req.body
     const user = new User(req.body)
     bcrypt.genSalt(10, (err, salt) => 
@@ -17,10 +18,10 @@ exports.createUser = (req, res)=>{
             
         })
 }))
-  }  
+  }) 
 
   exports.getDashboard = (req, res)=>{
-    User.find()
+    User.find().sort({Posted: -1})
     .then((data)=>{
         if(!data){
             console.log("no data found")
