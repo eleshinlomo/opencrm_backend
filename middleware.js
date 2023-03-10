@@ -6,7 +6,7 @@ exports.registerAuth = (req, res, next)=>{
     User.findOne({email})
     .then((email)=>{
         if(email){
-            return res.redirect('/')
+            res.redirect('/')
         }else{
             next()
         }

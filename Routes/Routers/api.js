@@ -5,11 +5,13 @@ const User = require('../../models/user')
 
 
 
-// Get Apis
+// Get APIs
 router.get('/dashboard', controller.getDashboard)
+router.get('/message', controller.message)
+router.post('/login', controller.login);
 
 
-// Post Apis
+// Post APIs
 router.post('/addUser/', controller.createUser)
 
 
