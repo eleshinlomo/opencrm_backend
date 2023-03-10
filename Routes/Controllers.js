@@ -7,52 +7,23 @@ const LocalStrategy = require('passport-local').Strategy;
 
 
 
-let messager = []
-exports.message = (req, res)=>{
-    messager.push("elephant")
-    res.json({msg: messager})
-}
 
-
-// exports.createUser = ((req, res)=>{
-    
-    
-//     const {email, firstname, lastname, password} = req.body
-//     User.findOne({email})
-//     .then((email)=>{
-//             if(email){
-//                 messager.push("error with email")
-//                 console.log("email error")
-//                 res.json({msg: messager})
-//             }else{
-//                 const user = new User(req.body)
-//                 bcrypt.genSalt(10, (err, salt) => 
-//                 bcrypt.hash(user.password, salt, (err, hash)=>{
-//                     if(err) throw err;
-//                     user.password = hash;
-//                     console.log(user)
-//                     user.save()
-//                     res.json({msg: "You are now registered"})
-        
-// }))
-//                 }
-//             })
-    
-//   }) 
-
-  exports.getDashboard = (req, res)=>{
-    User.find().sort({Posted: -1})
+exports.getUser = (req, res)=>{
+    User.find()
     .then((data)=>{
         if(!data){
             console.log("no data found")
         }else{
-           return res.json(data)
+           return res.json({data: data})
         }
     })
     .then((result)=>{
         console.log(result)
     })
-  }
+}
+
+
+  
 
   
 
@@ -99,81 +70,118 @@ exports.createUser = async (req, res) => {
 
 
 
-
-exports.login = (req, res, next) => {
-
-    passport.use(
-        new LocalStrategy(
-          {
-            usernameField: 'email',
-            passwordField: 'password'
-          },
-          async (email, password, done) => {
+passport.use(
+            new LocalStrategy(
+              {
+                usernameField: 'email',
+                passwordField: 'password'
+              },
+              async (email, password, done) => {
+                try {
+                  const user = await User.findOne({ email});
+                  
+          
+                  if (!user) {
+                    return done(null, false, { message: 'User does not exist' });
+                  }
+                  
+                  const isMatch = await bcrypt.compare(password, user.password);
+          
+                  if (!isMatch) {
+                    return done(null, false, { message: 'Invalid email or password' });
+                  }
+          
+                  return done(null, user);
+                } catch (error) {
+                  return done(error);
+                }
+              }
+            )
+          );
+          
+          passport.serializeUser((user, done) => {
+            done(null, user.id);
+          });
+          
+          passport.deserializeUser(async (id, done) => {
             try {
-              const user = await User.find({ email, password });
-              
-      
+              const user = await User.findById(id);
+          
               if (!user) {
-                return done(null, false, { message: 'Invalid email or password' });
+                return done(null, false);
               }
-              
-              const isMatch = await user.comparePassword(password);
-      
-              if (!isMatch) {
-                return done(null, false, { message: 'Invalid email or password' });
-              }
-      
+          
               return done(null, user);
             } catch (error) {
               return done(error);
             }
-          }
-        )
-      );
-      
-      passport.serializeUser((user, done) => {
-        done(null, user.id);
-      });
-      
-      passport.deserializeUser(async (id, done) => {
-        try {
-          const user = await User.findById(id);
-      
-          if (!user) {
-            return done(null, false);
-          }
-      
-          return done(null, user);
-        } catch (error) {
-          return done(error);
+          });
+    
+      passport.authenticate('local', (err, user, info) => {
+        if (err) {
+          return next(err);
         }
-      });
+    
+        if (!user) {
+          return res.status(401).json({
+            success: false,
+            message: info.message
+          });
+        }
+    })
 
-  passport.authenticate('local', (err, user, info) => {
-    if (err) {
-      return next(err);
-    }
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: info.message
-      });
-    }
 
-    req.logIn(user, err => {
+
+
+
+exports.login = (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
       if (err) {
         return next(err);
       }
-
-      return res.status(200).json({
-        success: true,
-        message: 'User logged in successfully',
-        user
+  
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: info.message
+        });
+      }
+  
+      req.logIn(user, err => {
+        if (err) {
+          return next(err);
+        }
+  
+        return res.status(200).json({
+          success: true,
+          message: 'User logged in successfully',
+          user
+        });
       });
-    });
-  })(req, res, next);
-};
+    })(req, res, next);
+  };
+  
+ 
+  
+  exports.loginAuth = (req, res, next)=>{
+    if (req.isAuthenticated()) {
+      return res.status(400).json({
+        success: false,
+        message: 'You are already logged in'
+      });
+    }
+  };
+  
 
+
+exports.logout = (req, res) => {
+    req.logout();
+    res.status(200).json({
+      success: true,
+      message: 'User logged out successfully'
+    });
+  };
+  
 
 

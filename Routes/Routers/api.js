@@ -5,14 +5,16 @@ const User = require('../../models/user')
 
 
 
+
 // Get APIs
-router.get('/dashboard', controller.getDashboard)
-router.get('/message', controller.message)
-router.post('/login', controller.login);
+router.get('/user', controller.getUser)
+router.get('/user/:id', controller.getUser)
+router.get('/logout', controller.logout);
+
 
 
 // Post APIs
 router.post('/addUser/', controller.createUser)
-
+router.post('/login', controller.login, controller.loginAuth)
 
 module.exports = router
